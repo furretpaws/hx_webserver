@@ -11,6 +11,7 @@ class HTTPRequest {
     public var headers:Array<Array<String>> = [];
     public var error:String = null;
     public var client:Socket;
+    public var postData:String = "";
     private var server:HTTPServer;
     public var methods:Array<String>;
     public function new (d:Socket, server:HTTPServer, head:String):Void {
@@ -31,6 +32,20 @@ class HTTPRequest {
                 this.headers.push([splitAgain[0], splitAgain[1]]);
             }
             methods = head.split(" ");
+            if (methods[0] != "GET") { //hold on this isn't a get request?
+                var t:Array<String> = this.data.split("\r\n");
+                var v:Int = 0;
+                for (i in 0...t.length) {
+                    if (t[i] == " " || t[i] == "" || t[i] == "\r" || t[i] == "\n") {
+                        v = i;
+                    }
+                }
+                var f:String = "";
+                for (i in 0...v) {
+                    f += t[i] + "\r\n";
+                }
+                postData = this.data.split(f)[1];
+            }
         } catch (err:String) {
             trace(err);
             this.error = err;

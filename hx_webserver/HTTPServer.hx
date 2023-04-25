@@ -65,7 +65,7 @@ class HTTPServer {
         } catch (err:String) {
             throw "Cannot bind to " + ip + ":" + port + ", perhaps the port is already being used?\n" + err;
         }
-        server.listen(-1);
+        server.listen(256);
         if (log) {
             trace("HTTP server successfully initialized at " + ip + ":" + port);
         }
