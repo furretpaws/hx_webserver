@@ -1,0 +1,10 @@
+{
+    "name": "hx_webserver",
+    "url" : "no",
+    "license": "GPL",
+    "tags": ["HTTP", "Web", "Web server", "HTTP server"],
+    "description": "An HTTP server library for Haxe",
+    "version": "0.0.1",
+    "releasenote": "making an http server in haxe like a true sigma?????",
+    "contributors": ["Furret"]
+}
