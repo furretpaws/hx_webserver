@@ -1,9 +1,9 @@
 {
     "name": "hx_webserver",
-    "url" : "no",
+    "url" : "https://github.com/FurretDev/hx_webserver",
     "license": "GPL",
     "tags": ["HTTP", "Web", "Web server", "HTTP server"],
-    "description": "An HTTP server library for Haxe",
+    "description": "A basic HTTP server library for Haxe (HTTP only)",
     "version": "0.0.1",
     "releasenote": "making an http server in haxe like a true sigma?????",
     "contributors": ["Furret"]
