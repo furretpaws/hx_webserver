@@ -15,6 +15,8 @@ class HTTPRequest {
     private var server:HTTPServer;
     public var methods:Array<String>;
     public function new (d:Socket, server:HTTPServer, head:String):Void {
+        if (d == null) return;
+
         try {
             this.client = d;
             this.server = server;
@@ -86,5 +88,9 @@ class HTTPRequest {
             var response:Bytes = server.prepareHttpResponse(code, mime, bytes);
             client.output.writeFullBytes(response, 0, response.length);
         }
+    }
+
+    public function replyRaw(bytes: haxe.io.Bytes) {
+        client.output.writeFullBytes(bytes, 0, bytes.length);
     }
 }
