@@ -6,6 +6,7 @@ import haxe.io.Bytes;
 import haxe.io.Error;
 
 import hx_webserver.HTTPResponse;
+import hx_webserver.HTTPServer;
 import hx_webserver.RouteMap;
 
 
@@ -14,7 +15,16 @@ class Main {
     static var server: Socket;
 
     static function main() {
-        Main.routeTest();
+        Main.serverTest();
+    }
+
+    static function serverTest() {
+        var server = new HTTPServer("0.0.0.0", 8080, true);
+        var routemap = new RouteMap();
+        routemap.add("/hello", function (r) {
+            return new HTTPResponse(Ok, "world");
+        });
+        routemap.attach(server);
     }
 
     static function routeTest() {
