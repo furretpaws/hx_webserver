@@ -1,32 +1,3 @@
-/*import sys.net.Socket;
-import sys.net.Host;
-import haxe.io.Bytes;
-import haxe.io.Error;
-
-class Main {
-  static var server: Socket;
-
-  static function main() {
-    server = new Socket();
-    server.bind(new Host("localhost"), 30);
-    server.listen(10);
-
-    while (true) {
-      try {
-        var socket:Socket = server.accept();
-        var byteBuffer = Bytes.alloc(1024);
-        var output:String;
-        var bytesRead:Int = socket.input.readBytes(byteBuffer, 0, 1024);
-        var byteString = Bytes.alloc(bytesRead);
-        byteString.blit(0, byteBuffer, 0, bytesRead);
-        output = byteString.toString();
-
-        trace(output);
-      }
-    }
-  }
-}*/
-
 package hx_webserver;
 
 import sys.net.Socket;
@@ -65,7 +36,7 @@ class HTTPServer {
         } catch (err:String) {
             throw "Cannot bind to " + ip + ":" + port + ", perhaps the port is already being used?\n" + err;
         }
-        server.listen(256);
+        server.listen(1024);
         if (log) {
             trace("HTTP server successfully initialized at " + ip + ":" + port);
         }
@@ -74,7 +45,6 @@ class HTTPServer {
             try {
                 var client:Socket = server.accept();
                 var head:String = client.input.readLine();
-                //trace(head);
                 if (head.contains("HTTP/1.1")) {
                     sys.thread.Thread.create(() -> {
                         var req:HTTPRequest = new HTTPRequest(client, this, head);
@@ -94,12 +64,14 @@ class HTTPServer {
     private function prepareHttpResponse(code:Int, mime:String, value:Bytes):Bytes {
         var bytesOutput:BytesOutput = new BytesOutput();
         bytesOutput.writeString("HTTP/1.1 " + code + " " + HTTPUtils.codeToMessage(code));
-        bytesOutput.writeString("\n");
+        bytesOutput.writeString("\r\n");
         bytesOutput.writeString("Content-Length: " + value.length);
-        bytesOutput.writeString("\n");
+        bytesOutput.writeString("\r\n");
         bytesOutput.writeString("Content-Type: " + mime);
-        bytesOutput.writeString("\n");
-        bytesOutput.writeString("\n");
+        bytesOutput.writeString("\r\n");
+        bytesOutput.writeString("Access-Control-Allow-Origin: *"); //js fetch is stupid
+        bytesOutput.writeString("\r\n");
+        bytesOutput.writeString("\r\n");
         bytesOutput.writeString(value.toString());
         bytesOutput.writeString("\r\n");
         //trace(bytes.toString());

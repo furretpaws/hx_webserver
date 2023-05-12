@@ -15,13 +15,15 @@ class HTTPRequest {
     private var server:HTTPServer;
     public var methods:Array<String>;
     public function new (d:Socket, server:HTTPServer, head:String):Void {
+        if (d == null) return;
+
         try {
             this.client = d;
             this.server = server;
 
             client = d;
-            var byteBuffer = Bytes.alloc(1024);
-            var bytesRead:Int = client.input.readBytes(byteBuffer, 0, 1024);
+            var byteBuffer = Bytes.alloc(8192);
+            var bytesRead:Int = client.input.readBytes(byteBuffer, 0, 8192);
             var byteString = Bytes.alloc(bytesRead);
             byteString.blit(0, byteBuffer, 0, bytesRead);
             this.data = byteString.toString();
@@ -86,5 +88,9 @@ class HTTPRequest {
             var response:Bytes = server.prepareHttpResponse(code, mime, bytes);
             client.output.writeFullBytes(response, 0, response.length);
         }
+    }
+
+    public function replyRaw(bytes: haxe.io.Bytes) {
+        client.output.writeFullBytes(bytes, 0, bytes.length);
     }
 }
