@@ -17,6 +17,8 @@ class HTTPRequest {
     public function new (d:Socket, server:HTTPServer, head:String):Void {
         if (d == null) return;
 
+        if (d == null) return;
+
         try {
             this.client = d;
             this.server = server;

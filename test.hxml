@@ -1,0 +1,5 @@
+-cp .
+-neko test.n
+-main hx_webserver.test.Main
+-debug
+
