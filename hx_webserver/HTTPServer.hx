@@ -45,7 +45,7 @@ class HTTPServer {
             try {
                 var client:Socket = server.accept();
                 var head:String = client.input.readLine();
-                if (head.contains("HTTP/1.1")) {
+                if (head.contains("HTTP/1.")) {
                     sys.thread.Thread.create(() -> {
                         var req:HTTPRequest = new HTTPRequest(client, this, head);
                         onClientConnect(req);
@@ -53,6 +53,8 @@ class HTTPServer {
                             trace("A new connection has been detected");
                         }
                     });
+                } else {
+                    client.close();
                 }
             } catch (err) {
                 if (this.log) {
