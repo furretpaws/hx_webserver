@@ -4,7 +4,7 @@
     "license": "MIT",
     "tags": ["HTTP", "Web", "Web server", "HTTP server"],
     "description": "A basic HTTP server library for Haxe (HTTP only)",
-    "version": "0.0.2",
-    "releasenote": "Set socket connections to 256 and implemented incoming post data",
+    "version": "0.0.3",
+    "releasenote": "A proper bytes handler",
     "contributors": ["Furret"]
 }

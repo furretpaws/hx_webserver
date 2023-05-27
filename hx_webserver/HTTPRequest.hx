@@ -7,6 +7,8 @@ import haxe.io.Bytes;
 import hx_webserver.HTTPServer;
 import haxe.io.BytesOutput;
 
+using StringTools;
+
 class HTTPRequest {
     public var data:String = null;
     public var headers:Array<Array<String>> = [];
@@ -33,6 +35,7 @@ class HTTPRequest {
                 var splitAgain:Array<String> = split[i].split(": ");
                 this.headers.push([splitAgain[0], splitAgain[1]]);
             }
+
             methods = head.split(" ");
             if (methods[0] != "GET") { //hold on this isn't a get request?
                 var t:Array<String> = this.data.split("\r\n");
@@ -47,9 +50,9 @@ class HTTPRequest {
                     f += t[i] + "\r\n";
                 }
                 postData = this.data.split(f)[1];
+                postData = postData.replace("\r", "");
             }
         } catch (err:String) {
-            trace(err);
             this.error = err;
         }
     }
@@ -66,11 +69,11 @@ class HTTPRequest {
         if (!failed) {
             if (read == 1024) {
                 //woah there might be more bytes
-                bytesOutput.writeBytes(bytes, 0, bytes.length);
+                bytesOutput.writeBytes(bytes, 0, read);
                 handleBytes(socket);
             } else if (read < 1024 && read != 0) {
                 //last straw i think
-                bytesOutput.writeBytes(bytes, 0, bytes.length);
+                bytesOutput.writeBytes(bytes, 0, read);
             } else if (read == 0) {
                 //do nothing
             }
