@@ -5,6 +5,7 @@ import sys.io.File;
 import sys.FileSystem;
 import haxe.io.Bytes;
 import hx_webserver.HTTPServer;
+import haxe.io.BytesOutput;
 
 class HTTPRequest {
     public var data:String = null;
@@ -14,21 +15,18 @@ class HTTPRequest {
     public var postData:String = "";
     private var server:HTTPServer;
     public var methods:Array<String>;
+    public var bytesOutput:BytesOutput;
     public function new (d:Socket, server:HTTPServer, head:String):Void {
         if (d == null) return;
 
-        if (d == null) return;
-
+        bytesOutput = new BytesOutput();
         try {
             this.client = d;
             this.server = server;
 
             client = d;
-            var byteBuffer = Bytes.alloc(8192);
-            var bytesRead:Int = client.input.readBytes(byteBuffer, 0, 8192);
-            var byteString = Bytes.alloc(bytesRead);
-            byteString.blit(0, byteBuffer, 0, bytesRead);
-            this.data = byteString.toString();
+            handleBytes(d);
+            data = bytesOutput.getBytes().toString();
 
             var split = data.split("\n");
             for (i in 0...split.length) {
@@ -53,6 +51,29 @@ class HTTPRequest {
         } catch (err:String) {
             trace(err);
             this.error = err;
+        }
+    }
+    private function handleBytes(socket:Socket) {
+        var input = socket.input;
+        var bytes:Bytes = Bytes.alloc(1024);
+        var read:Int = 0;
+        var failed:Bool = false;
+        try {
+            read = input.readBytes(bytes,0,bytes.length);
+        } catch (err:String) {
+            failed = true;
+        }
+        if (!failed) {
+            if (read == 1024) {
+                //woah there might be more bytes
+                bytesOutput.writeBytes(bytes, 0, bytes.length);
+                handleBytes(socket);
+            } else if (read < 1024 && read != 0) {
+                //last straw i think
+                bytesOutput.writeBytes(bytes, 0, bytes.length);
+            } else if (read == 0) {
+                //do nothing
+            }
         }
     }
     public function getHeaderValue(header:String):String {
