@@ -53,6 +53,8 @@ class HTTPServer {
                             trace("A new connection has been detected");
                         }
                     });
+                } else {
+                    client.close();
                 }
             } catch (err) {
                 if (this.log) {
