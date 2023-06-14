@@ -34,7 +34,7 @@ class HTTPRequest {
             bytes = bytesb.getBytes();
 
             data = bytes.toString();
-            trace(data);
+            //trace(data);
 
             var split = data.split("\n");
             var newlineReached:Bool = false;
