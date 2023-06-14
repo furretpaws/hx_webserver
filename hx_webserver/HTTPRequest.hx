@@ -17,7 +17,9 @@ class HTTPRequest {
     public var postData:String = "";
     private var server:HTTPServer;
     public var methods:Array<String>;
+    public var formdata:FormdataRequest;
     public var bytesOutput:BytesOutput;
+    public var bytes:Bytes;
     public function new (d:Socket, server:HTTPServer, head:String):Void {
         if (d == null) return;
 
@@ -28,12 +30,22 @@ class HTTPRequest {
 
             client = d;
             handleBytes(d);
-            data = bytesOutput.getBytes().toString();
+            var bytesb = bytesOutput;
+            bytes = bytesb.getBytes();
+
+            data = bytes.toString();
+            trace(data);
 
             var split = data.split("\n");
+            var newlineReached:Bool = false;
             for (i in 0...split.length) {
-                var splitAgain:Array<String> = split[i].split(": ");
-                this.headers.push([splitAgain[0], splitAgain[1]]);
+                if (split[i] == "\r" || split[i] == "\n" || split[i] == "\r\n") {
+                    newlineReached = true;
+                }
+                if (!newlineReached) {
+                    var splitAgain:Array<String> = split[i].split(": ");
+                    this.headers.push([splitAgain[0], splitAgain[1]]);
+                }
             }
 
             methods = head.split(" ");
@@ -51,6 +63,10 @@ class HTTPRequest {
                 }
                 postData = this.data.split(f)[1];
                 postData = postData.replace("\r", "");
+            }
+
+            if (getHeaderValue("Content-Type").contains("multipart/form-data;")) {
+                formdata = new FormdataRequest(this);
             }
         } catch (err:String) {
             this.error = err;
