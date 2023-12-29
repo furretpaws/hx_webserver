@@ -20,6 +20,26 @@ class HTTPRequest {
     public var formdata:FormdataRequest;
     public var bytesOutput:BytesOutput;
     public var bytes:Bytes;
+    /**
+	 * POST Data
+	 */
+	public var postData:Bytes;
+
+	/**
+	 * HOST
+	 */
+	public var host:String;
+
+	/**
+	 * Content length
+	 */
+	public var contentLength:Int;
+
+	/**
+	 * Content type
+	 */
+	public var contentType:String;
+    
     public function new (d:Socket, server:HTTPServer, head:String):Void {
         if (d == null) return;
 
@@ -74,26 +94,25 @@ class HTTPRequest {
     }
     private function handleBytes(socket:Socket) {
         var input = socket.input;
-        var bytes:Bytes = Bytes.alloc(1024);
-        var read:Int = 0;
-        var failed:Bool = false;
-        try {
-            read = input.readBytes(bytes,0,bytes.length);
-        } catch (err:String) {
-            failed = true;
-        }
-        if (!failed) {
-            if (read == 1024) {
-                //woah there might be more bytes
-                bytesOutput.writeBytes(bytes, 0, read);
-                handleBytes(socket);
-            } else if (read < 1024 && read != 0) {
-                //last straw i think
-                bytesOutput.writeBytes(bytes, 0, read);
-            } else if (read == 0) {
-                //do nothing
-            }
-        }
+		while (true) {
+			var content = input.readLine();
+			if (content == "") {
+				break;
+			}
+			var datas = content.split(" ");
+			switch datas[0] {
+				case "host:":
+					host = datas[1];
+				case "Content-Length:":
+					contentLength = Std.parseInt(datas[1]);
+				case "Content-Type:":
+					contentType = datas[1];
+			}
+		}
+		if (contentLength > 0) {
+			postData = Bytes.alloc(contentLength);
+			input.readBytes(postData, 0, contentLength);
+		}
     }
     public function getHeaderValue(header:String):String {
         var tlcheader:String = header.toLowerCase();
