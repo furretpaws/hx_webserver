@@ -146,8 +146,54 @@ class HTTPRequest {
             var bytes:Bytes = sys.io.File.getBytes(file);
             var mime:String = HTTPUtils.getMimeType(file);
             @:privateAccess
-            var response:Bytes = server.prepareHttpResponse(code, mime, bytes);
-            client.output.writeFullBytes(response, 0, response.length);
+            /*var response:Bytes = server.prepareHttpResponse(code, mime, bytes);
+            client.output.writeFullBytes(response, 0, response.length);*/
+            /*
+                This is EXTREMELY unefficient, considering that sending a direct chunk of all bytes could be kinda painful for the server.
+                Best way is to send 1024 chunks of bytes constantly, until it's over
+            */
+            sys.thread.Thread.create(() -> {
+                // We cannot use prepareHttpResponse, we need to handle it ourselves
+                var BO:BytesOutput = new BytesOutput();
+                BO.writeString("HTTP/1.1 " + code + " " + HTTPUtils.codeToMessage(code));
+                BO.writeString("\r\n");
+                BO.writeString("Content-Length: " + bytes.length);
+                BO.writeString("\r\n");
+                BO.writeString("Content-Type: " + mime);
+                BO.writeString("\r\n");
+                BO.writeString("Access-Control-Allow-Origin: *"); // js fetch is strict with CORS
+                BO.writeString("\r\n");
+                BO.writeString("\r\n");
+                var actualBytes:Bytes = BO.getBytes();
+                trace("RESPONSE SENT");
+                client.output.writeFullBytes(actualBytes, 0, actualBytes.length);
+                
+                // Response sent, we need to send the bytes now.
+                var chunkOver:Bool = false;
+                while (!chunkOver) {
+                    var chunkSize = Math.min(bytes.length, 1024);
+                    var currentChunk:Bytes = bytes.sub(0, Std.int(chunkSize));
+                    var errored:Bool = false;
+                    
+                    //trace("SENDING CHUNKS "+chunkSize+" BYTES: BYTES LENGTH IS " + bytes.length + "!!!");
+                    try {
+                        client.output.writeFullBytes(currentChunk, 0, Std.int(chunkSize));
+                    } catch (e:Dynamic) {
+                        //trace("ERROR!");
+                        errored = true;
+                        client.close();
+                        chunkOver = true;
+                    }
+            
+                    // Reduce the remaining bytes
+                    bytes = bytes.sub(Std.int(chunkSize), Std.int(bytes.length - chunkSize));
+                    
+                    // Check if we have sent all data
+                    if (bytes.length == 0) {
+                        chunkOver = true;
+                    }
+                }
+            });            
         }
     }
 
